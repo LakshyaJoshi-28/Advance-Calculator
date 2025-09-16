@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Calculator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-color: #2c3e50;
+            --calc-bg: #34495e;
+            --display-bg: #1e2b38;
+            --btn-bg: #4c667f;
+            --btn-hover: #5d7894;
+            --op-bg: #e74c3c;
+            --op-hover: #f1695e;
+            --equals-bg: #27ae60;
+            --equals-hover: #2ecc71;
+            --clear-bg: #95a5a6;
+            --clear-hover: #bdc3c7;
+            --mode-bg: #f39c12;
+            --mode-hover: #f7a932;
+            --text-color: #ecf0f1;
+            --func-bg: #3498db;
+            --func-hover: #58b0e7;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .name-prompt, .welcome-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        .name-input {
+            padding: 10px 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .name-submit {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: var(--equals-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .name-submit:hover {
+            background-color: var(--equals-hover);
+        }
+
+        .welcome-text {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .calculator {
+            border-radius: 20px;
+            padding: 25px;
+            background-color: var(--calc-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .mode-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 12px;
+            font-size: 1em;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--mode-bg);
+            color: var(--calc-bg);
+            transition: background-color 0.2s;
+        }
+
+        .mode-btn:hover {
+            background-color: var(--mode-hover);
+        }
+
+        .active-mode {
+            background-color: var(--func-bg);
+            color: var(--text-color);
+        }
+
+        .active-mode:hover {
+            background-color: var(--func-hover);
+        }
+
+        .display-container {
+            margin-bottom: 20px;
+        }
+
+        #history {
+            color: #bdc3c7;
+            font-size: 0.9em;
+            text-align: right;
+            height: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0.8;
+            padding-right: 10px;
+        }
+
+        #display {
+            background-color: var(--display-bg);
+            color: var(--text-color);
+            font-size: 3em;
+            text-align: right;
+            padding: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 5px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+
+        .buttons {
+            display: grid;
+            gap: 10px;
+        }
+
+        .buttons-normal {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .buttons-scientific {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .buttons-conversion {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .btn {
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: 500;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            color: var(--text-color);
+        }
+
+        .btn-normal { background-color: var(--btn-bg); }
+        .btn-normal:hover { background-color: var(--btn-hover); }
+        .btn-op { background-color: var(--op-bg); }
+        .btn-op:hover { background-color: var(--op-hover); }
+        .btn-equals {
+            background-color: var(--equals-bg);
+            grid-column: span 2;
+            font-size: 2em;
+        }
+        .btn-equals:hover { background-color: var(--equals-hover); }
+        .btn-clear { background-color: var(--clear-bg); color: var(--calc-bg); }
+        .btn-clear:hover { background-color: var(--clear-hover); }
+        .btn-func { background-color: var(--func-bg); }
+        .btn-func:hover { background-color: var(--func-hover); }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .zero-btn {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 450px) {
+            .calculator {
+                padding: 15px;
+            }
+            .btn {
+                padding: 15px;
+                font-size: 1.2em;
+            }
+            #display {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="name-prompt" class="name-prompt">
+    <div style="text-align: center;">
+        <h2 style="color: var(--text-color);">Welcome! Please enter your name.</h2>
+        <input type="text" id="username-input" class="name-input" placeholder="Your Name">
+        <button id="username-submit" class="name-submit">Enter</button>
+    </div>
+</div>
+
+<div class="calculator" style="display: none;">
+    <div class="mode-switcher">
+        <button class="mode-btn active-mode" onclick="setMode('normal')">Standard</button>
+        <button class="mode-btn" onclick="setMode('scientific')">Scientific</button>
+        <button class="mode-btn" onclick="setMode('conversion')">Conversion</button>
+    </div>
+    
+    <div class="display-container">
+        <div id="history"></div>
+        <div id="display">0</div>
+    </div>
+    
+    <div id="buttons-container" class="buttons"></div>
+</div>
+
+<script>
+    let display = document.getElementById('display');
+    let historyDisplay = document.getElementById('history');
+    let buttonsContainer = document.getElementById('buttons-container');
+    let currentInput = '0';
+    let firstOperand = null;
+    let operator = null;
+    let waitForSecondOperand = false;
+    let history = '';
+    let currentMode = 'normal';
+
+    const normalButtons = [
+        { text: 'AC', class: 'btn btn-clear', onClick: 'clearAll()' },
+        { text: 'DEL', class: 'btn btn-clear', onClick: 'deleteLast()' },
+        { text: '/', class: 'btn btn-op', onClick: 'appendOperator(\'/\')' },
+        { text: '*', class: 'btn btn-op', onClick: 'appendOperator(\'*\')' },
+        { text: '7', class: 'btn btn-normal', onClick: 'appendNumber(\'7\')' },
+        { text: '8', class: 'btn btn-normal', onClick: 'appendNumber(\'8\')' },
+        { text: '9', class: 'btn btn-normal', onClick: 'appendNumber(\'9\')' },
+        { text: '-', class: 'btn btn-op', onClick: 'appendOperator(\'-\')' },
+        { text: '4', class: 'btn btn-normal', onClick: 'appendNumber(\'4\')' },
+        { text: '5', class: 'btn btn-normal', onClick: 'appendNumber(\'5\')' },
+        { text: '6', class: 'btn btn-normal', onClick: 'appendNumber(\'6\')' },
+        { text: '+', class: 'btn btn-op', onClick: 'appendOperator(\'+\')' },
+        { text: '1', class: 'btn btn-normal', onClick: 'appendNumber(\'1\')' },
+        { text: '2', class: 'btn btn-normal', onClick: 'appendNumber(\'2\')' },
+        { text: '3', class: 'btn btn-normal', onClick: 'appendNumber(\'3\')' },
+        { text: '0', class: 'btn btn-normal zero-btn', onClick: 'appendNumber(\'0\')' },
+        { text: '.', class: 'btn btn-normal', onClick: 'appendNumber(\'.\')' },
+        { text: '=', class: 'btn btn-equals', onClick: 'calculateResult()' }
+    ];
+
+    const scientificButtons = [
+        { text: 'AC', class: 'btn btn-clear', onClick: 'clearAll()' },
+        { text: 'DEL', class: 'btn btn-clear', onClick: 'deleteLast()' },
+        { text: 'log', class: 'btn btn-func', onClick: 'performFunction(\'log\')' },
+        { text: '√', class: 'btn btn-func', onClick: 'performFunction(\'sqrt\')' },
+        { text: 'sin', class: 'btn btn-func', onClick: 'performFunction(\'sin\')' },
+        { text: 'cos', class: 'btn btn-func', onClick: 'performFunction(\'cos\')' },
+        { text: 'tan', class: 'btn btn-func', onClick: 'performFunction(\'tan\')' },
+        { text: 'x^y', class: 'btn btn-func', onClick: 'appendOperator(\'pow\')' },
+        { text: '7', class: 'btn btn-normal', onClick: 'appendNumber(\'7\')' },
+        { text: '8', class: 'btn btn-normal', onClick: 'appendNumber(\'8\')' },
+        { text: '9', class: 'btn btn-normal', onClick: 'appendNumber(\'9\')' },
+        { text: '/', class: 'btn btn-op', onClick: 'appendOperator(\'/\')' },
+        { text: '4', class: 'btn btn-normal', onClick: 'appendNumber(\'4\')' },
+        { text: '5', class: 'btn btn-normal', onClick: 'appendNumber(\'5\')' },
+        { text: '6', class: 'btn btn-normal', onClick: 'appendNumber(\'6\')' },
+        { text: '*', class: 'btn btn-op', onClick: 'appendOperator(\'*\')' },
+        { text: '1', class: 'btn btn-normal', onClick: 'appendNumber(\'1\')' },
+        { text: '2', class: 'btn btn-normal', onClick: 'appendNumber(\'2\')' },
+        { text: '3', class: 'btn btn-normal', onClick: 'appendNumber(\'3\')' },
+        { text: '-', class: 'btn btn-op', onClick: 'appendOperator(\'-\')' },
+        { text: '0', class: 'btn btn-normal zero-btn', onClick: 'appendNumber(\'0\')' },
+        { text: '.', class: 'btn btn-normal', onClick: 'appendNumber(\'.\')' },
+        { text: '+', class: 'btn btn-op', onClick: 'appendOperator(\'+\')' },
+        { text: '=', class: 'btn btn-equals', onClick: 'calculateResult()' }
+    ];
+
+    const conversionButtons = [
+        { text: 'AC', class: 'btn btn-clear', onClick: 'clearAll()' },
+        { text: 'DEL', class: 'btn btn-clear', onClick: 'deleteLast()' },
+        { text: 'km to cm', class: 'btn btn-func', onClick: 'convert(\'km_cm\')' },
+        { text: 'cm to km', class: 'btn btn-func', onClick: 'convert(\'cm_km\')' },
+        { text: 'meter to feet', class: 'btn btn-func', onClick: 'convert(\'m_ft\')' },
+        { text: 'feet to meter', class: 'btn btn-func', onClick: 'convert(\'ft_m\')' },
+        { text: 'kg to pound', class: 'btn btn-func', onClick: 'convert(\'kg_lb\')' },
+        { text: 'pound to kg', class: 'btn btn-func', onClick: 'convert(\'lb_kg\')' },
+        { text: '°C to °F', class: 'btn btn-func', onClick: 'convert(\'c_f\')' },
+        { text: '°F to °C', class: 'btn btn-func', onClick: 'convert(\'f_c\')' },
+        { text: '1', class: 'btn btn-normal', onClick: 'appendNumber(\'1\')' },
+        { text: '2', class: 'btn btn-normal', onClick: 'appendNumber(\'2\')' },
+        { text: '3', class: 'btn btn-normal', onClick: 'appendNumber(\'3\')' },
+        { text: '4', class: 'btn btn-normal', onClick: 'appendNumber(\'4\')' },
+        { text: '5', class: 'btn btn-normal', onClick: 'appendNumber(\'5\')' },
+        { text: '6', class: 'btn btn-normal', onClick: 'appendNumber(\'6\')' },
+        { text: '7', class: 'btn btn-normal', onClick: 'appendNumber(\'7\')' },
+        { text: '8', class: 'btn btn-normal', onClick: 'appendNumber(\'8\')' },
+        { text: '9', class: 'btn btn-normal', onClick: 'appendNumber(\'9\')' },
+        { text: '0', class: 'btn btn-normal zero-btn', onClick: 'appendNumber(\'0\')' },
+        { text: '.', class: 'btn btn-normal', onClick: 'appendNumber(\'.\')' }
+    ];
+
+    function createButtons(buttonsArray) {
+        buttonsContainer.innerHTML = '';
+        buttonsContainer.className = 'buttons';
+        if (currentMode === 'normal') buttonsContainer.classList.add('buttons-normal');
+        if (currentMode === 'scientific') buttonsContainer.classList.add('buttons-scientific');
+        if (currentMode === 'conversion') buttonsContainer.classList.add('buttons-conversion');
+
+        buttonsArray.forEach(btn => {
+            const buttonElement = document.createElement('button');
+            buttonElement.textContent = btn.text;
+            buttonElement.className = btn.class;
+            buttonElement.setAttribute('onclick', btn.onClick);
+            buttonsContainer.appendChild(buttonElement);
+        });
+    }
+
+    function setMode(mode) {
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        modeButtons.forEach(btn => btn.classList.remove('active-mode'));
+        document.querySelector(`[onclick="setMode('${mode}')"]`).classList.add('active-mode');
+
+        currentMode = mode;
+        clearAll();
+        if (mode === 'normal') {
+            createButtons(normalButtons);
+        } else if (mode === 'scientific') {
+            createButtons(scientificButtons);
+        } else if (mode === 'conversion') {
+            createButtons(conversionButtons);
+        }
+    }
+
+    // --- Core Calculator Logic ---
+    function updateDisplay() {
+        display.textContent = currentInput;
+        historyDisplay.textContent = history;
+    }
+
+    function appendNumber(number) {
+        if (waitForSecondOperand) {
+            currentInput = number;
+            waitForSecondOperand = false;
+        } else {
+            if (currentInput.includes('.') && number === '.') return;
+            currentInput = currentInput === '0' ? number : currentInput + number;
+        }
+        updateDisplay();
+    }
+
+    function appendOperator(op) {
+        if (firstOperand !== null && operator !== null && !waitForSecondOperand) {
+            calculateResult();
+        }
+        firstOperand = parseFloat(currentInput);
+        history = `${firstOperand} ${op}`;
+        operator = op;
+        waitForSecondOperand = true;
+        updateDisplay();
+    }
+
+    function calculateResult() {
+        if (operator === null || waitForSecondOperand) { return; }
+        const secondOperand = parseFloat(currentInput);
+        let result = 0;
+        let expression = `${firstOperand} ${operator} ${secondOperand}`;
+
+        switch (operator) {
+            case '+': result = firstOperand + secondOperand; break;
+            case '-': result = firstOperand - secondOperand; break;
+            case '*': result = firstOperand * secondOperand; break;
+            case '/':
+                if (secondOperand === 0) { currentInput = 'Error'; clearState(); updateDisplay(); return; }
+                result = firstOperand / secondOperand;
+                break;
+            case 'pow': result = Math.pow(firstOperand, secondOperand); break;
+        }
+
+        currentInput = String(result);
+        history = `${expression} =`;
+        firstOperand = result;
+        operator = null;
+        waitForSecondOperand = true;
+        updateDisplay();
+    }
+    
+    // --- Scientific Functions ---
+    function performFunction(func) {
+        const number = parseFloat(currentInput);
+        let result = 0;
+        let expression = '';
+
+        if (isNaN(number)) { currentInput = 'Error'; clearState(); updateDisplay(); return; }
+
+        switch (func) {
+            case 'sqrt':
+                if (number < 0) { currentInput = 'Error'; clearState(); updateDisplay(); return; }
+                result = Math.sqrt(number);
+                expression = `√(${number})`;
+                break;
+            case 'log':
+                if (number <= 0) { currentInput = 'Error'; clearState(); updateDisplay(); return; }
+                result = Math.log10(number);
+                expression = `log(${number})`;
+                break;
+            case 'sin':
+                result = Math.sin(number * Math.PI / 180);
+                expression = `sin(${number})`;
+                break;
+            case 'cos':
+                result = Math.cos(number * Math.PI / 180);
+                expression = `cos(${number})`;
+                break;
+            case 'tan':
+                result = Math.tan(number * Math.PI / 180);
+                expression = `tan(${number})`;
+                break;
+        }
+
+        currentInput = String(result);
+        history = expression + ' =';
+        firstOperand = result;
+        operator = null;
+        waitForSecondOperand = true;
+        updateDisplay();
+    }
+
+    // --- Conversion Functions ---
+    function convert(type) {
+        const number = parseFloat(currentInput);
+        if (isNaN(number)) { currentInput = 'Error'; clearState(); updateDisplay(); return; }
+        let result = 0;
+        let expression = '';
+        
+        switch (type) {
+            case 'km_cm': result = number * 100000; expression = `${number} km to cm`; break;
+            case 'cm_km': result = number / 100000; expression = `${number} cm to km`; break;
+            case 'm_ft': result = number * 3.28084; expression = `${number} m to ft`; break;
+            case 'ft_m': result = number / 3.28084; expression = `${number} ft to m`; break;
+            case 'kg_lb': result = number * 2.20462; expression = `${number} kg to lb`; break;
+            case 'lb_kg': result = number / 2.20462; expression = `${number} lb to kg`; break;
+            case 'c_f': result = (number * 9/5) + 32; expression = `${number}°C to °F`; break;
+            case 'f_c': result = (number - 32) * 5/9; expression = `${number}°F to °C`; break;
+        }
+        
+        currentInput = String(result);
+        history = expression;
+        clearState();
+        updateDisplay();
+    }
+
+    function deleteLast() {
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+        } else {
+            currentInput = '0';
+        }
+        updateDisplay();
+    }
+
+    function clearAll() {
+        clearState();
+        updateDisplay();
+    }
+
+    function clearState() {
+        currentInput = '0';
+        firstOperand = null;
+        operator = null;
+        waitForSecondOperand = false;
+        history = '';
+    }
+
+    // --- Welcome Screen Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const namePrompt = document.getElementById('name-prompt');
+        const usernameInput = document.getElementById('username-input');
+        const usernameSubmit = document.getElementById('username-submit');
+        const calculator = document.querySelector('.calculator');
+
+        usernameSubmit.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                namePrompt.style.display = 'none';
+                
+                const welcomeMessage = document.createElement('div');
+                welcomeMessage.className = 'welcome-message';
+                welcomeMessage.innerHTML = `<h2 class="welcome-text">Welcome, ${username}!</h2>`;
+                document.body.appendChild(welcomeMessage);
+
+                setTimeout(() => {
+                    document.body.removeChild(welcomeMessage);
+                    calculator.style.display = 'block';
+                    setMode('normal');
+                }, 1500); 
+            }
+        });
+
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                usernameSubmit.click();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
